@@ -36,7 +36,7 @@ pipeline {
               cat "$env_file"
               cp "$env_file" .env
               npm install
-              npm test 
+              yarn test 
               rm .env
             '''
           }
