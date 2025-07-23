@@ -2,14 +2,6 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Install Docker CLI, unzip, curl, gnupg, software-properties-common
-# RUN apt-get update && \
-#     apt-get install -y docker.io unzip curl gnupg software-properties-common
-
-# # Download dan extract oc & kubectl (OpenShift CLI)
-# RUN curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz -o oc.tar.gz && \
-#     tar -xzvf oc.tar.gz -C /usr/local/bin oc kubectl && \
-#     rm oc.tar.gz
 RUN apt-get update && \
     apt-get install -y docker.io unzip curl gnupg software-properties-common && \
     curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz -o oc.tar.gz && \
