@@ -1,17 +1,26 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: backend-app
+  name: be-app3-build
+  namespace: fathya-app
 spec:
   source:
-    type: Binary
+    type: Git
+    git:
+      uri: https://github.com/fathyafi/api-main.git
+      ref: main
+    contextDir: backend
   strategy:
     type: Docker
     dockerStrategy:
       dockerfilePath: Dockerfile
+      forcePull: true
+      # Set DockerHub credentials for pushing
+      pushSecret:
+        name: dockerhub-secret
   output:
     to:
       kind: DockerImage
-      name: docker.io/fathyafi/be-app2:latest
-    pushSecret:
-      name: dockerhub-creds-openshft
+      name: docker.io/fathyafi/be-app3:latest
+  triggers:
+    - type: ConfigChange
