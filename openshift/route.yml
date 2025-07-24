@@ -1,11 +1,11 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: backend-route
+  name: backend-route1
 spec:
   to:
     kind: Service
-    name: backend-service
+    name: backend-service1
   port:
     targetPort: 8080
   tls:

@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-app
+  name: backend-app1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend-app
+      app: backend-app1
   template:
     metadata:
       labels:
-        app: backend-app
+        app: backend-app1
     spec:
       containers:
-      - name: backend-app
-        image: fathyafi/be-app2:latest
+      - name: backend-app1
+        image: fathyafi/be-app3:latest
         ports:
           - containerPort: 8080
