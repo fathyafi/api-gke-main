@@ -9,11 +9,11 @@ pipeline {
 
     environment {
         REGISTRY_URL                  = 'docker.io'
-        BACKEND_IMAGE                 = 'fathyafi/be-app3:latest'
-        OPENSHIFT_PROJECT             = 'fathya-app'
+        BACKEND_IMAGE                 = 'fathyafi/be-app-redhat:latest'
+        OPENSHIFT_PROJECT             = 'fathyafi-dev'
         SONAR_QUBE_SERVER_URL         = 'https://sonar3am.42n.fun/'
-        SONAR_QUBE_PROJECT_KEY        = 'be-app-sq'
-        SONAR_QUBE_PROJECT_NAME       = 'Project SonarQube Backend'
+        SONAR_QUBE_PROJECT_KEY        = 'be-app-sq-redhat'
+        SONAR_QUBE_PROJECT_NAME       = 'Project SonarQube Backend RedHat'
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
             steps {
                 deleteDir()
                 dir('backend') {
-                    git branch: 'main', url: 'https://github.com/fathyafi/api-main.git'
+                    git branch: 'main', url: 'https://github.com/fathyafi/api-redhat-main.git'
                 }
                 echo "Repository checked out successfully."
             }
@@ -104,17 +104,20 @@ pipeline {
             }
         }
 
-        stage('Deploy to OpenShift (GCP)') {
+        stage('Deploy to OpenShift (RedHat)') {
             steps {
-                script {
-                    sh "oc project ${OPENSHIFT_PROJECT}"
-                    dir('backend/openshift') {
-                        sh "oc apply -f deployment.yml"
-                        sh "oc apply -f service.yml"
-                        sh "oc apply -f route.yml"
-                        sh "oc rollout restart deployment/backend-app1"
-                    }
-                    echo "Application deployed to OpenShift."
+                withCredentials([string(credentialsId: 'openshift-redhat-token',variable: 'OC_TOKEN')]) {
+                sh '''
+                    oc login --token=$OC_TOKEN --server=https://api.rm1.0a51.p1.openshiftapps.com:6443
+                    oc project $OPENSHIFT_PROJECT
+                '''
+                dir('backend/openshift') {
+                    sh "oc apply -f deployment.yml"
+                    sh "oc apply -f service.yml"
+                    sh "oc apply -f route.yml"
+                    sh "oc rollout restart deployment/backend-app"
+                }
+                echo "Application deployed to OpenShift."
                 }
             }
         }
