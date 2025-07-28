@@ -8,13 +8,18 @@ pipeline {
     }
 
     environment {
-        REGISTRY_URL                  = 'docker.io'
-        BACKEND_IMAGE                 = 'fathyafi/be-app-redhat:latest'
-        OPENSHIFT_PROJECT             = 'fathyafi-dev'
-        SONAR_QUBE_SERVER_URL         = 'https://sonar3am.42n.fun/'
-        SONAR_QUBE_PROJECT_KEY        = 'be-app-sq-redhat'
-        SONAR_QUBE_PROJECT_NAME       = 'Project SonarQube Backend RedHat'
+        REGION                    = 'asia-southeast2'
+        GCP_PROJECT_ID            = 'am-finalproject'
+        GCP_CLUSTER_NAME          = 'finalproject-cluster'
+        REPO_NAME                 = 'fathya-backend-repo'
+        IMAGE_NAME                = 'be-app'
+        IMAGE_TAG                 = 'latest'
+        FULL_IMAGE_NAME           = "${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+        SONAR_QUBE_SERVER_URL     = 'https://sonar3am.42n.fun/'
+        SONAR_QUBE_PROJECT_KEY    = 'be-app-sq-gke'
+        SONAR_QUBE_PROJECT_NAME   = 'Project SonarQube Backend GKE'
     }
+
 
     stages {
         stage('Checkout') {
@@ -79,47 +84,44 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build & Push Docker Image to Artifact Registry') {
             steps {
-                dir('backend'){
+                dir('backend') {
+                    withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                        script {
+                            sh '''
+                                gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                                gcloud config set project $GCP_PROJECT_ID
+                                gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+                                docker build -t $FULL_IMAGE_NAME .
+                                docker push $FULL_IMAGE_NAME
+                            '''
+                            echo "✅ Image pushed to Artifact Registry: ${FULL_IMAGE_NAME}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to GKE') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     script {
-                        sh "docker build --no-cache -t ${BACKEND_IMAGE} ."
-                        echo "Backend image built."
+                        sh '''
+                            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+                            gcloud config set project $GCP_PROJECT_ID
+                            gcloud container clusters get-credentials $GCP_CLUSTER_NAME --region $REGION
+
+                            kubectl apply -f backend/k8s/deployment.yml
+                            kubectl apply -f backend/k8s/service.yml
+                            kubectl apply -f backend/k8s/hpa.yml
+                            kubectl rollout restart deployment backend-app
+                        '''
+                        echo "🚀 Application deployed to GKE"
                     }
                 }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh """
-                            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-                            docker push ${BACKEND_IMAGE}
-                        """
-                        echo "Docker image pushed to Docker Hub."
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to OpenShift (RedHat)') {
-            steps {
-                withCredentials([string(credentialsId: 'openshift-redhat-token',variable: 'OC_TOKEN')]) {
-                sh '''
-                    oc login --token=$OC_TOKEN --server=https://api.rm1.0a51.p1.openshiftapps.com:6443
-                    oc project $OPENSHIFT_PROJECT
-                '''
-                dir('backend/openshift') {
-                    sh "oc apply -f deployment.yml"
-                    sh "oc apply -f service.yml"
-                    sh "oc apply -f route.yml"
-                    sh "oc rollout restart deployment/backend-app"
-                }
-                echo "Application deployed to OpenShift."
-                }
-            }
+            }   
         }
     }
 
