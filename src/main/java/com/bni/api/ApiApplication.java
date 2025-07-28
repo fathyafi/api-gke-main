@@ -18,7 +18,7 @@ public class ApiApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/api/**")
+				registry.addMapping("/**")
 						.allowedOrigins("http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://34.101.70.239","http://localhost:3001")
 						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 						.allowedHeaders("*")
