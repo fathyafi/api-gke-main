@@ -26,7 +26,7 @@ pipeline {
             steps {
                 deleteDir()
                 dir('backend') {
-                    git branch: 'main', url: 'https://github.com/fathyafi/api-redhat-main.git'
+                    git branch: 'main', url: 'https://github.com/fathyafi/api-gke-main.git'
                 }
                 echo "Repository checked out successfully."
             }
