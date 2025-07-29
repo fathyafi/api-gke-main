@@ -71,11 +71,13 @@ pipeline {
                     script {
                         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                             sh """
-                                mvn clean compile sonar:sonar \\
+                                mvn clean verify sonar:sonar \\
                                 -Dsonar.projectKey=${SONAR_QUBE_PROJECT_KEY} \\
                                 -Dsonar.projectName="${SONAR_QUBE_PROJECT_NAME}" \\
                                 -Dsonar.host.url=${SONAR_QUBE_SERVER_URL} \\
                                 -Dsonar.token=${SONAR_TOKEN}
+                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \\
+                                -Dsonar.scanner.skipProjectMetadata=true
                             """
                             echo "SonarQube analysis completed."
                         }
