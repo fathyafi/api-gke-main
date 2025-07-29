@@ -59,7 +59,7 @@ pipeline {
                         sh './mvnw clean package -DskipTests'
                         withMaven(maven: 'Maven 3.8.8') {
                             sh './mvnw test jacoco:report'
-                        // }
+                        }
                     }
                 }
             }

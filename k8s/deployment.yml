@@ -1,3 +1,25 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: backend-app
+#   labels:
+#     app: backend-app
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: backend-app
+#   template:
+#     metadata:
+#       labels:
+#         app: backend-app
+#     spec:
+#       containers:
+#         - name: backend-app
+#           image: asia-southeast2-docker.pkg.dev/am-finalproject/fathya-backend-repo/be-app:latest
+#           ports:
+#             - containerPort: 8080
+#           imagePullPolicy: Always
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,13 +41,12 @@ spec:
           image: asia-southeast2-docker.pkg.dev/am-finalproject/fathya-backend-repo/be-app:latest
           ports:
             - containerPort: 8080
-          # resources:
-          #   requests:
-          #     cpu: "100m"
-          #     memory: "128Mi"
-          #   limits:
-          #     cpu: "500m"
-          #     memory: "512Mi"
           imagePullPolicy: Always
-          env:
-            
+          volumeMounts:
+            - name: firebase-secret
+              mountPath: /app/firebase
+              readOnly: true
+      volumes:
+        - name: firebase-secret
+          secret:
+            secretName: firebase-credentials
