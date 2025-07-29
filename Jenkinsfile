@@ -59,7 +59,7 @@ pipeline {
                         sh './mvnw clean package -DskipTests'
                         withMaven(maven: 'Maven 3.8.8') {
                             sh './mvnw test jacoco:report'
-                        }
+                        // }
                     }
                 }
             }
@@ -116,6 +116,8 @@ pipeline {
                             gcloud config set project $GCP_PROJECT_ID
                             gcloud container clusters get-credentials $GCP_CLUSTER_NAME --region $REGION
 
+                            kubectl apply -f backend/k8s/redis-deployment.yml
+                            kubectl apply -f backend/k8s/redis-service.yml
                             kubectl apply -f backend/k8s/deployment.yml
                             kubectl apply -f backend/k8s/service.yml
                             kubectl apply -f backend/k8s/hpa.yml
