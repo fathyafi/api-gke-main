@@ -116,8 +116,7 @@ pipeline {
                             gcloud config set project $GCP_PROJECT_ID
                             gcloud container clusters get-credentials $GCP_CLUSTER_NAME --region $REGION
 
-                            kubectl apply -f backend/k8s/redis-deployment.yml
-                            kubectl apply -f backend/k8s/redis-service.yml
+                            kubectl apply -f backend/k8s/redis.yml
                             kubectl apply -f backend/k8s/deployment.yml
                             kubectl apply -f backend/k8s/service.yml
                             kubectl apply -f backend/k8s/hpa.yml
