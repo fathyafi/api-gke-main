@@ -117,8 +117,7 @@ pipeline {
                             gcloud container clusters get-credentials $GCP_CLUSTER_NAME --region $REGION
 
                             kubectl apply -f backend/k8s/redis.yml
-                            kubectl apply -f backend/k8s/deployment.yml
-                            kubectl apply -f backend/k8s/service.yml
+                            kubectl apply -f backend/k8s/backend.yml
                             kubectl apply -f backend/k8s/hpa.yml
                             kubectl rollout restart deployment backend-app
                         '''
